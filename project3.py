@@ -10,28 +10,45 @@ CLIENT_SECRET = '1723989c8c6d4f1a8c5b6b54ff40d8b3'
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
+def getGenre(track):
+    artist_ids = [artist['id'] for artist in track['artists']]
+    artists = sp.artists(artist_ids)['artists']
+    genres = []
+    for artist in artists:
+        genres.extend(artist['genres'])
+    return genres
 
-def get_random_tracks(num_tracks, start_year, end_year, min_popularity):
-    tracks = []
-    total_tracks = 0
-    offset = 0
-    while total_tracks < num_tracks:
-        limit = min(50, num_tracks - total_tracks)
-        year = random.randint(start_year, end_year)
-        results = sp.search(q=f'year:{year}', type='track', limit=limit, offset=offset, market='US')
-        tracks.extend(results['tracks']['items'])
-        total_tracks += len(results['tracks']['items'])
-        offset += limit
-        time.sleep(0.1)
+def get_random_songs_from_playlist(playlist_id, n):
 
-    # Filter tracks by popularity
-    filtered_tracks = [track for track in tracks if track['popularity'] >= min_popularity]
-    return filtered_tracks
+    # Fetch playlist tracks
+    playlist_tracks = sp.playlist_items(playlist_id)['items']
 
+    # Extract track IDs
+    track_ids = [track['track']['id'] for track in playlist_tracks if
+                 track['track'] is not None and track['track']['id'] is not None]
 
+    # Randomly select n tracks
+    selected_tracks = random.sample(track_ids, min(n, len(track_ids)))
+
+    # Fetch track details
+    random_songs = []
+    for track_id in selected_tracks:
+        # Handle rate limiting
+        while True:
+            try:
+                track_info = sp.track(track_id)
+                random_songs.append(track_info)
+                break
+            except spotipy.SpotifyException as e:
+                if e.http_status == 429:  # Rate limiting, wait and retry
+                    time.sleep(5)  # Wait for 5 seconds and retry
+                else:
+                    print("Error fetching track:", e)
+                    break
+
+    return random_songs
 
 def main():
-
     genres = ['pop', 'rock', 'hip hop', 'country', 'jazz', 'k-pop', 'lo-fi', 'metal']
 
     # Define query variables
@@ -74,7 +91,8 @@ def main():
 
     print("Generating Playlist...")
 
-    random_tracks = get_random_tracks(100, minimumYear, maximumYear, 5)
+    random_tracks = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", songAmount)
+    print(getGenre(random_tracks[0]))
 
     track_index_map = {}
     for i, track in enumerate(random_tracks):
