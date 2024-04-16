@@ -10,22 +10,26 @@ CLIENT_SECRET = '1723989c8c6d4f1a8c5b6b54ff40d8b3'
 client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-overallGenres = set()
+overallGenres = {}
 vertex_genre_map = {}
+
 
 def get_genre(track, index):
     artist_name = track['track']['artists'][0]['name']
-    try:
+
+    if artist_name != '':
         artist_info = sp.search(q=artist_name, type='artist')
-    except:
+    else:
         vertex_genre_map[index] = []
-        print("error")
         return []
 
     genres = artist_info['artists']['items'][0]['genres']
 
     for genre in genres:
-        overallGenres.add(genre)
+        if genre in overallGenres:
+            overallGenres[genre] += 1
+        else:
+            overallGenres[genre] = 1
 
     vertex_genre_map[index] = genres
     return genres
@@ -72,7 +76,7 @@ def main():
     random_tracks = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 500)
 
     print("Generating Map...")
-    print(len(random_tracks))
+
     track_index_map = {}
     for i, track in enumerate(random_tracks):
         track_index_map[i] = track
@@ -85,27 +89,29 @@ def main():
     for i in range(len(graph)):
         for j in range(len(graph[i])):
             if i != j:
-                if j not in vertex_genre_map or not vertex_genre_map[j]:
-                    graph[i][j] = graph[i][j] - len(set(vertex_genre_map[i])&set(vertex_genre_map[j]))
+                graph[i][j] = graph[i][j] - len(set(vertex_genre_map[i])&set(vertex_genre_map[j]))
 
     print("Select a genre you would like a playlist for: ")
-    genre_map = {}
-    for i, genre in enumerate(overallGenres):
-        genre_map[i] = genre
+
+    acceptable_genres = []
+    for key in overallGenres:
+        if overallGenres[key] > song_amount:
+            acceptable_genres.append(key)
+
+    for i, genre in enumerate(acceptable_genres):
+        acceptable_genres[i] = genre
         print(i, ". ", genre)
 
     index = int(input("Index: "))
 
-    selected_genre = genre_map[index]
+    selected_genre = acceptable_genres[index]
     print(selected_genre)
     starting_vertex = 0
 
     for i in range(len(vertex_genre_map)):
         genres = vertex_genre_map[i]
-        print(genres)
         found = False
         for genre in genres:
-            print(i, genre)
             if genre == selected_genre:
                 starting_vertex = i
                 found = True
@@ -113,10 +119,14 @@ def main():
         if found:
             break
 
-    print(starting_vertex)
-
     g = Graph(graph, len(random_tracks))
-    print(g.dijkstras(500, song_amount, starting_vertex))
+    song_indices = g.dijkstras(500, song_amount, starting_vertex)
+
+    print("Your songs are: ")
+    for i in song_indices:
+        name = track_index_map[i]['track']['name']
+        url = track_index_map[i]['track']['external_urls']['spotify']
+        print(name + ": " + url)
 
 
 if __name__ == "__main__":
