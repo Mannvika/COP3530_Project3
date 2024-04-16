@@ -2,7 +2,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import random
 import time
-import sys
 
 CLIENT_ID = 'ee38a806ef614c80967d02453cd0c31c'
 CLIENT_SECRET = '1723989c8c6d4f1a8c5b6b54ff40d8b3'
@@ -12,7 +11,8 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
 def get_genre(track):
-    artist_ids = [artist['id'] for artist in track['artists']]
+    track_info = track['track']
+    artist_ids = [artist['id'] for artist in track_info['artists']]
     artists = sp.artists(artist_ids)['artists']
     genres = []
     for artist in artists:
@@ -20,52 +20,28 @@ def get_genre(track):
     return genres
 
 
-def get_random_songs_from_playlist(playlist_id, n):
+def get_random_songs_from_playlist(playlist_id, subset_amount):
+    offset = 0
+    playlist_tracks = []
 
-    # Fetch playlist tracks
-    playlist_tracks = sp.playlist_items(playlist_id)['items']
+    print("Getting Songs...")
+    while len(playlist_tracks) < (subset_amount * 4):
+        results = sp.playlist_items(playlist_id, limit=100, offset=offset)
+        items = results['items']
+        playlist_tracks.extend(items)
 
-    # Extract track IDs
-    track_ids = [track['track']['id'] for track in playlist_tracks if
-                 track['track'] is not None and track['track']['id'] is not None]
+        offset += len(items)
 
-    # Randomly select n tracks
-    selected_tracks = random.sample(track_ids, min(n, len(track_ids)))
+        if len(items) < 100:
+            break
+        time.sleep(0.01)
 
-    # Fetch track details
-    random_songs = []
-    for track_id in selected_tracks:
-        # Handle rate limiting
-        while True:
-            try:
-                track_info = sp.track(track_id)
-                random_songs.append(track_info)
-                break
-            except spotipy.SpotifyException as e:
-                if e.http_status == 429:  # Rate limiting, wait and retry
-                    time.sleep(5)  # Wait for 5 seconds and retry
-                else:
-                    print("Error fetching track:", e)
-                    break
+    random.shuffle(playlist_tracks)
 
-    return random_songs
+    selected_tracks = random.sample(playlist_tracks, min(subset_amount, len(playlist_tracks)))
 
-# Dijkstras Algorithm: https://www.geeksforgeeks.org/python-program-for-dijkstras-shortest-path-algorithm-greedy-algo-7/
-def dijkstras_shortest_path(graph, source, num_of_songs):
-
-    vs = {}
-    s = {}
-    dimensions = []
-    predecessors = []
-
-    for i in range(len(graph)):
-        vs.add(i)
-        dimensions[i] = sys.maxsize
-        predecessors[i] = -1
-
-
-
-    return False
+    print("Finished Getting Songs...")
+    return selected_tracks
 
 
 def main():
@@ -82,12 +58,14 @@ def main():
     # Save it as an int
     song_amount = int(song_amount)
 
-    print("Generating Playlist...")
+    random_tracks = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 400)
 
-    random_tracks = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 317)
+    print("Generating Map...")
     track_index_map = {}
     for i, track in enumerate(random_tracks):
         track_index_map[i] = track
+
+    print("Generating Graph...")
 
     graph = [[1000]*len(random_tracks) for i in range(len(random_tracks))]
 
@@ -95,6 +73,7 @@ def main():
         for j in range(len(graph[i])):
             if i != j:
                 graph[i][j] = graph[i][j] - len(set(get_genre(track_index_map[i]))&set(get_genre(track_index_map[j])))
+                print(get_genre(track_index_map[i]))
 
 
 if __name__ == "__main__":
