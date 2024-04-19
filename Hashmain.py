@@ -59,6 +59,7 @@ def main():
 
 
     song_number = int(input("Enter number of songs for playlist (between 1 and 25):"))
+
     for i in range(len(hash_map.gen_list)-1):
         print(f'{i}. {hash_map.gen_list[i]}')
 
@@ -70,7 +71,12 @@ def main():
     final = hash_map.search(hash_map.gen_list[index])
     while len(final) < song_number:
         ind = int(input('Not enough songs in genre, enter another index:'))
-        final.extend(hash_map.search(hash_map.gen_list[ind]))
+        a=hash_map.search(hash_map.gen_list[ind])
+        for item in a:
+            if item not in final:
+                final.append(item)
+
+        #final.extend(hash_map.search(hash_map.gen_list[ind]))
 
 
 
