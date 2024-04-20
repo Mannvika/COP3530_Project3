@@ -2,7 +2,7 @@ from spotifyGenerator import SpotifyGenerator
 from HashMap import HashMap
 from HashMap import Song
 from HashMap import get_random_songs_from_playlist
-from HashMap import getGenre
+from HashMap import get_genre
 
 def Dijkstra():
     # Create a spotify generator object
@@ -45,7 +45,7 @@ def Hash():
     hash_map = HashMap(50)
     # insert all songs in our hash map
     for i in range(len(songs)):
-        song = Song(songs[i]['name'], songs[i]['external_urls'], getGenre(songs[i]))
+        song = Song(songs[i]['track']['name'], songs[i]['track']['external_urls'], get_genre(songs[i]))
         hash_map.insert(song)
 
     song_number = 0
@@ -75,7 +75,6 @@ def Hash():
                 print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
-
 
     final = hash_map.search(hash_map.gen_list[index])
     # get more genres if first genre doesn't have enough number of songs
@@ -114,15 +113,6 @@ def main():
             break
         else:
             print("Invalid input")
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":

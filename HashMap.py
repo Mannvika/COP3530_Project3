@@ -11,45 +11,56 @@ client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, clien
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
+def get_genre(track):
+    # Get the name of the artist
+    artist_name = track['track']['artists'][0]['name']
 
-def getGenre(track):
-    #Returns a list of genres for each tarck we get from spotify
-    artist_ids = [artist['id'] for artist in track['artists']]
-    artists = sp.artists(artist_ids)['artists']
-    genres = []
-    for artist in artists:
-        genres.extend(artist['genres'])
+    # If this returns a non-empty value, get the artist object
+    if artist_name != '':
+        artist_info = sp.search(q=artist_name, type='artist')
+    # Otherwise ignore this track
+    else:
+        return []
+
+    # Get all the genres of this artist
+    genres = artist_info['artists']['items'][0]['genres']
+
+    # Save this vertices genre list so we don't have to make api calls to find it again
     return genres
 
-def get_random_songs_from_playlist(playlist_id, n):
 
-    # Fetch playlist tracks
-    playlist_tracks = sp.playlist_items(playlist_id)['items']
+def get_random_songs_from_playlist(playlist_id, subset_amount):
+    # Offset refers to the index to start from
+    offset = 0
 
-    # Extract track IDs
-    track_ids = [track['track']['id'] for track in playlist_tracks if
-                 track['track'] is not None and track['track']['id'] is not None]
+    # Save a list of the songs we get
+    playlist_tracks = []
 
-    # Randomly select n tracks
-    selected_tracks = random.sample(track_ids, min(n, len(track_ids)))
+    print("Getting Songs...")
 
-    # Fetch track details
-    random_songs = []
-    for track_id in selected_tracks:
-        # Handle rate limiting
-        while True:
-            try:
-                track_info = sp.track(track_id)
-                random_songs.append(track_info)
-                break
-            except spotipy.SpotifyException as e:
-                if e.http_status == 429:  # Rate limiting, wait and retry
-                    time.sleep(5)  # Wait for 5 seconds and retry
-                else:
-                    print("Error fetching track:", e)
-                    break
+    # While we have less than subset_amount * 4 songs in our playlist_tracks
+    while len(playlist_tracks) < (subset_amount * 4):
 
-    return random_songs
+        # Get 100 items, add it to the playlist_tracks, and then move offset by the length of items we got
+        results = sp.playlist_items(playlist_id, limit=100, offset=offset)
+        items = results['items']
+        playlist_tracks.extend(items)
+
+        offset += len(items)
+
+        # If we have less than 100 items, we've reached the end of the playlist
+        if len(items) < 100:
+            break
+
+        # Sleep to prevent api from hitting the rate limit
+        time.sleep(0.01)
+
+    # Get a subset amount of random songs from the playlist tracks
+    random.shuffle(playlist_tracks)
+    selected_tracks = random.sample(playlist_tracks, min(subset_amount, len(playlist_tracks)))
+
+    print("Finished Getting Songs...")
+    return selected_tracks
 
 
 class Song:
@@ -58,9 +69,6 @@ class Song:
         self.title = title
         self.genres = genres
         self.url = url
-
-
-
 
 
 class HashMap:
@@ -81,7 +89,6 @@ class HashMap:
             self.map[index].append((genre, song))
             if genre not in self.gen_list:
                 self.gen_list.append(genre) #Using separate chaining for collisions
-
 
     def search(self, genre): #To search, go to the specific bucket that will contain the genre, and return songs of that genre
         index = self.hash_function(genre)
