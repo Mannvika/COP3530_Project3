@@ -52,9 +52,11 @@ def get_random_songs_from_playlist(playlist_id, n):
 
 
 class Song:
-    def __init__(self, title, genres):
+    def __init__(self, title, url, genres):
         self.title = title
         self.genres = genres
+        self.url = url
+
 
 
 
@@ -86,7 +88,7 @@ class HashMap:
             return "Empty"
         for key, value in self.map[index]:
             if key == genre:
-                results.append(value.title)
+                results.append(value)
         return results
 
 

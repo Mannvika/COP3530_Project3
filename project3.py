@@ -45,7 +45,7 @@ def Hash():
     hash_map = HashMap(50)
     # insert all songs in our hash map
     for i in range(len(songs)):
-        song = Song(songs[i]['name'], getGenre(songs[i]))
+        song = Song(songs[i]['name'], songs[i]['external_urls'], getGenre(songs[i]))
         hash_map.insert(song)
 
     song_number = 0
@@ -99,7 +99,7 @@ def Hash():
 
     # print out the playlist
     for i in range(song_number):
-        print(f'{i + 1}. {final[i]}')
+        print(f'{i+1}. {final[i].title}: {final[i].url}')
 
 
 def main():
