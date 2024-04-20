@@ -39,16 +39,18 @@ def Dijkstra():
         result = input("Want to make another playlist? (Y/y) type anything for no")
 
 def Hash():
+    print("Getting data for hash map")
     songs = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 350)
 
     hash_map = HashMap(50)
-
-    for i in range(len(songs)): # insert all songs in our hash map
+    # insert all songs in our hash map
+    for i in range(len(songs)):
         song = Song(songs[i]['name'], getGenre(songs[i]))
         hash_map.insert(song)
 
     song_number = 0
-    while True: # get a valid length for the playlist
+    # get a valid length for the playlist
+    while True:
         try:
             song_number = int(input("Enter number of songs for playlist (between 1 and 25): "))
             if 1 <= song_number <= 25:
@@ -58,10 +60,13 @@ def Hash():
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
 
-    for i in range(len(hash_map.gen_list)): # print all available genres
+    # print all available genres
+    for i in range(len(hash_map.gen_list)):
         print(f'{i}. {hash_map.gen_list[i]}')
+
     index = 0
-    while True: # get first genre index
+    # get first genre index
+    while True:
         try:
             index = int(input("Enter index of desired genre: "))
             if 0 <= index <= (len(hash_map.gen_list) - 1):
@@ -73,7 +78,8 @@ def Hash():
 
 
     final = hash_map.search(hash_map.gen_list[index])
-    while len(final) < song_number: # get more genres if first genre doesn't have enough number of songs
+    # get more genres if first genre doesn't have enough number of songs
+    while len(final) < song_number:
         print("Not enough songs in genre")
         ind = 0
         while True:
@@ -91,8 +97,9 @@ def Hash():
             if item not in final:
                 final.append(item)
 
+    # print out the playlist
     for i in range(song_number):
-        print(f'{i + 1}. {final[i]}') # print out the playlist
+        print(f'{i + 1}. {final[i]}')
 
 
 def main():
