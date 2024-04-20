@@ -13,6 +13,7 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 
 def getGenre(track):
+    #Returns a list of genres for each tarck we get from spotify
     artist_ids = [artist['id'] for artist in track['artists']]
     artists = sp.artists(artist_ids)['artists']
     genres = []
@@ -52,6 +53,7 @@ def get_random_songs_from_playlist(playlist_id, n):
 
 
 class Song:
+    #Song object that contains information that we will output
     def __init__(self, title, url, genres):
         self.title = title
         self.genres = genres
@@ -64,28 +66,28 @@ class Song:
 class HashMap:
     def __init__(self, size):
         self.size = size
-        self.map = [[] for _ in range(size)]
-        self.gen_list = []
+        self.map = [[] for _ in range(size)] #List of list of tuples of (genre, song)
+        self.gen_list = [] #Contains list of all genres
 
-    def hash_function(self, genre):
+    def hash_function(self, genre): #Hashing the genre.
         hash_value = 0
         for char in genre:
             hash_value = (hash_value * 31 + ord(char)) % self.size
         return hash_value
 
-    def insert(self, song):
+    def insert(self, song): #Finding a bucket and inserting the (genre, song) tuple
         for genre in song.genres:   #[(pop, song1), (pop, song2)]
             index = self.hash_function(genre)
             self.map[index].append((genre, song))
             if genre not in self.gen_list:
-                self.gen_list.append(genre)
+                self.gen_list.append(genre) #Using separate chaining for collisions
 
 
-    def search(self, genre):
+    def search(self, genre): #To search, go to the specific bucket that will contain the genre, and return songs of that genre
         index = self.hash_function(genre)
         results = []
         if not self.map[index]:
-            return "Empty"
+            return "Empty" #If the bucket is empty then that genre is not present
         for key, value in self.map[index]:
             if key == genre:
                 results.append(value)
