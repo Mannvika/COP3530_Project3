@@ -47,30 +47,61 @@ def get_random_songs_from_playlist(playlist_id, n):
 
     return random_songs
 
+
 def main():
 
     songs = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 350)
 
     hash_map = HashMap(50)
 
-    for i in range(len(songs) - 1):
+    for i in range(len(songs)):
         song = Song(songs[i]['name'], getGenre(songs[i]))
         hash_map.insert(song)
 
+    song_number=0
+    while True:
+        try:
+            song_number = int(input("Enter number of songs for playlist (between 1 and 25): "))
+            if 1 <= song_number <= 25:
+                break  # Valid input, exit loop
+            else:
+                print("Please enter a number between 1 and 25.")
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+    #song_number = int(input("Enter number of songs for playlist (between 1 and 25):"))
 
-    song_number = int(input("Enter number of songs for playlist (between 1 and 25):"))
-
-    for i in range(len(hash_map.gen_list)-1):
+    for i in range(len(hash_map.gen_list)):
         print(f'{i}. {hash_map.gen_list[i]}')
+    index=0
+    while True:
+        try:
+            index = int(input("Enter index of desired genre: "))
+            if 0 <= index <= (len(hash_map.gen_list)-1):
+                break  # Valid input, exit loop
+            else:
+                print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
 
 
-    index = int(input("Enter index of desired genre: "))
+    #index = int(input("Enter index of desired genre: "))
 
 
 
     final = hash_map.search(hash_map.gen_list[index])
     while len(final) < song_number:
-        ind = int(input('Not enough songs in genre, enter another index:'))
+        print("Not enough songs in genre")
+        ind=0
+        while True:
+            try:
+                ind = int(input("Enter index of desired genre: "))
+                if 0 <= ind <= (len(hash_map.gen_list) - 1):
+                    break  # Valid input, exit loop
+                else:
+                    print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
+            except ValueError:
+                print("Invalid input. Please enter a valid integer.")
+        #ind = int(input('Not enough songs in genre, enter another index:'))
         a=hash_map.search(hash_map.gen_list[ind])
         for item in a:
             if item not in final:
