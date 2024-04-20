@@ -1,7 +1,10 @@
 from spotifyGenerator import SpotifyGenerator
+from HashMap import HashMap
+from HashMap import Song
+from HashMap import get_random_songs_from_playlist
+from HashMap import getGenre
 
-
-def main():
+def Dijkstra():
     # Create a spotify generator object
     sg = SpotifyGenerator("6yPiKpy7evrwvZodByKvM9", 350)
 
@@ -34,6 +37,82 @@ def main():
 
         # Query user for another input
         result = input("Want to make another playlist? (Y/y) type anything for no")
+
+def Hash():
+    songs = get_random_songs_from_playlist("6yPiKpy7evrwvZodByKvM9", 350)
+
+    hash_map = HashMap(50)
+
+    for i in range(len(songs)):
+        song = Song(songs[i]['name'], getGenre(songs[i]))
+        hash_map.insert(song)
+
+    song_number = 0
+    while True:
+        try:
+            song_number = int(input("Enter number of songs for playlist (between 1 and 25): "))
+            if 1 <= song_number <= 25:
+                break  # Valid input, exit loop
+            else:
+                print("Please enter a number between 1 and 25.")
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+    # song_number = int(input("Enter number of songs for playlist (between 1 and 25):"))
+
+    for i in range(len(hash_map.gen_list)):
+        print(f'{i}. {hash_map.gen_list[i]}')
+    index = 0
+    while True:
+        try:
+            index = int(input("Enter index of desired genre: "))
+            if 0 <= index <= (len(hash_map.gen_list) - 1):
+                break  # Valid input, exit loop
+            else:
+                print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+
+    # index = int(input("Enter index of desired genre: "))
+
+    final = hash_map.search(hash_map.gen_list[index])
+    while len(final) < song_number:
+        print("Not enough songs in genre")
+        ind = 0
+        while True:
+            try:
+                ind = int(input("Enter index of desired genre: "))
+                if 0 <= ind <= (len(hash_map.gen_list) - 1):
+                    break  # Valid input, exit loop
+                else:
+                    print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
+            except ValueError:
+                print("Invalid input. Please enter a valid integer.")
+        # ind = int(input('Not enough songs in genre, enter another index:'))
+        a = hash_map.search(hash_map.gen_list[ind])
+        for item in a:
+            if item not in final:
+                final.append(item)
+
+        # final.extend(hash_map.search(hash_map.gen_list[ind]))
+
+    for i in range(song_number):
+        print(f'{i + 1}. {final[i]}')
+
+
+def main():
+
+    option = int(input("Enter the number of the method to find genre\n 1.Dijkstra's algorithm\n 2.HashMap "))
+    if option == 1:
+        Dijkstra()
+    if option == 2:
+        Hash()
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
