@@ -96,12 +96,19 @@ def Hash():
 
 
 def main():
+    # call functions according to the data structure to be used
+    while True:
+        option = input("Enter the number of the method to find genre\n 1.Dijkstra's algorithm\n 2.HashMap ")
+        if option == '1':
+            Dijkstra()
+            break
+        if option == '2':
+            Hash()
+            break
+        else:
+            print("Invalid input")
 
-    option = int(input("Enter the number of the method to find genre\n 1.Dijkstra's algorithm\n 2.HashMap "))
-    if option == 1:
-        Dijkstra()
-    if option == 2:
-        Hash()
+
 
 
 
