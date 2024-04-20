@@ -43,12 +43,12 @@ def Hash():
 
     hash_map = HashMap(50)
 
-    for i in range(len(songs)):
+    for i in range(len(songs)): # insert all songs in our hash map
         song = Song(songs[i]['name'], getGenre(songs[i]))
         hash_map.insert(song)
 
     song_number = 0
-    while True:
+    while True: # get a valid length for the playlist
         try:
             song_number = int(input("Enter number of songs for playlist (between 1 and 25): "))
             if 1 <= song_number <= 25:
@@ -57,12 +57,11 @@ def Hash():
                 print("Please enter a number between 1 and 25.")
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
-    # song_number = int(input("Enter number of songs for playlist (between 1 and 25):"))
 
-    for i in range(len(hash_map.gen_list)):
+    for i in range(len(hash_map.gen_list)): # print all available genres
         print(f'{i}. {hash_map.gen_list[i]}')
     index = 0
-    while True:
+    while True: # get first genre index
         try:
             index = int(input("Enter index of desired genre: "))
             if 0 <= index <= (len(hash_map.gen_list) - 1):
@@ -72,10 +71,9 @@ def Hash():
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
 
-    # index = int(input("Enter index of desired genre: "))
 
     final = hash_map.search(hash_map.gen_list[index])
-    while len(final) < song_number:
+    while len(final) < song_number: # get more genres if first genre doesn't have enough number of songs
         print("Not enough songs in genre")
         ind = 0
         while True:
@@ -87,16 +85,14 @@ def Hash():
                     print(f"Invalid index. Please enter a number between 0 and {len(hash_map.gen_list) - 1}.")
             except ValueError:
                 print("Invalid input. Please enter a valid integer.")
-        # ind = int(input('Not enough songs in genre, enter another index:'))
+
         a = hash_map.search(hash_map.gen_list[ind])
         for item in a:
             if item not in final:
                 final.append(item)
 
-        # final.extend(hash_map.search(hash_map.gen_list[ind]))
-
     for i in range(song_number):
-        print(f'{i + 1}. {final[i]}')
+        print(f'{i + 1}. {final[i]}') # print out the playlist
 
 
 def main():
